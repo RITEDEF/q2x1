@@ -7,9 +7,159 @@
     <link rel="stylesheet" a href="style.css">
 </head>
 <body>
-    <img src="neckhurt.gif" width="100%" height="100%">
     <audio loop autoplay>
-        <source src="neckhurt.MP3" type="audio/mp3">
+        <source src="nigers.mp3" type="audio/mp3">
     </audio>
+        <script>
+        // Элементы DOM
+        const launcher = document.getElementById('launcher');
+        const mainContent = document.getElementById('mainContent');
+        const launchButton = document.getElementById('launchButton');
+        const fullscreenIndicator = document.getElementById('fullscreenIndicator');
+        
+        // Функция для входа в полноэкранный режим
+        function enterFullscreen() {
+            const element = document.documentElement;
+            
+            if (element.requestFullscreen) {
+                element.requestFullscreen();
+            } else if (element.mozRequestFullScreen) {
+                element.mozRequestFullScreen();
+            } else if (element.webkitRequestFullscreen) {
+                element.webkitRequestFullscreen();
+            } else if (element.msRequestFullscreen) {
+                element.msRequestFullscreen();
+            }
+        }
+        
+        // Функция для выхода из полноэкранного режима
+        function exitFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
+        
+        // Переключение полноэкранного режима
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                enterFullscreen();
+            } else {
+                exitFullscreen();
+            }
+        }
+        
+        // Обновление индикатора полноэкранного режима
+        function updateFullscreenIndicator() {
+            if (document.fullscreenElement || 
+                document.webkitFullscreenElement || 
+                document.mozFullScreenElement || 
+                document.msFullscreenElement) {
+                fullscreenIndicator.style.display = 'block';
+            } else {
+                fullscreenIndicator.style.display = 'none';
+            }
+        }
+        
+        // Запуск сайта в полноэкранном режиме
+        launchButton.addEventListener('click', function() {
+            // Сначала показываем основной контент
+            mainContent.style.display = 'block';
+            
+            // Затем активируем полноэкранный режим
+            enterFullscreen();
+            
+            // Плавно скрываем запускающий экран
+            setTimeout(() => {
+                launcher.style.opacity = '0';
+                setTimeout(() => {
+                    launcher.style.display = 'none';
+                }, 500);
+            }, 100);
+            
+            // Сохраняем в localStorage, что пользователь согласился на полный экран
+            localStorage.setItem('fullscreenAccepted', 'true');
+        });
+        
+        // Обработка переходов по ссылкам
+        document.addEventListener('click', function(event) {
+            const link = event.target.closest('a');
+            
+            if (link && link.href && !link.href.startsWith('javascript:')) {
+                // Если ссылка ведет на страницу этого же сайта
+                if (link.href.includes(window.location.hostname) || 
+                    !link.href.startsWith('http')) {
+                    
+                    event.preventDefault();
+                    
+                    // Небольшая задержка для плавного перехода
+                    setTimeout(() => {
+                        window.location.href = link.href;
+                    }, 50);
+                }
+            }
+        });
+        
+        // Проверяем, соглашался ли пользователь ранее на полный экран
+        window.addEventListener('load', function() {
+            if (localStorage.getItem('fullscreenAccepted') === 'true') {
+                // Пользователь уже соглашался, пропускаем запускающий экран
+                launcher.style.display = 'none';
+                mainContent.style.display = 'block';
+                
+                // Пытаемся войти в полноэкранный режим
+                // (потребуется клик, если страница была перезагружена)
+                setTimeout(() => {
+                    if (!document.fullscreenElement) {
+                        // Показываем сообщение о необходимости клика
+                        const message = document.createElement('div');
+                        message.innerHTML = 'Кликните в любом месте для активации полноэкранного режима';
+                        message.style.cssText = `
+                            position: fixed;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            background: rgba(0,0,0,0.8);
+                            color: white;
+                            padding: 20px;
+                            border-radius: 10px;
+                            z-index: 9999;
+                            text-align: center;
+                            max-width: 80%;
+                        `;
+                        document.body.appendChild(message);
+                        
+                        document.addEventListener('click', function activateFullscreen() {
+                            enterFullscreen();
+                            document.body.removeChild(message);
+                            document.removeEventListener('click', activateFullscreen);
+                        }, { once: true });
+                    }
+                }, 500);
+            }
+            
+            updateFullscreenIndicator();
+        });
+        
+        // Отслеживание изменения полноэкранного режима
+        document.addEventListener('fullscreenchange', updateFullscreenIndicator);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenIndicator);
+        document.addEventListener('mozfullscreenchange', updateFullscreenIndicator);
+        document.addEventListener('MSFullscreenChange', updateFullscreenIndicator);
+        
+        // Обработка выхода из полноэкранного режима по клавише ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && document.fullscreenElement) {
+                // При выходе из полноэкранного режима по ESC
+                // можно показать сообщение или выполнить другие действия
+                console.log('Пользователь вышел из полноэкранного режима');
+            }
+        });
+    </script>
 </body>
 </html>
